@@ -22,13 +22,13 @@ export function createReceipt(receipt, path) {
 
 function generateHeader(doc) {
   doc
-    .image("logo.png", 50, 45, { width: 50 })
+    .image("logo.png", 50, 45, { width: 150 })
     .fillColor("#444444")
-    .fontSize(20)
-    .text("ACME Inc.", 110, 57)
+    // .fontSize(20)
+    // .text("fashionCulture Inc.", 110, 57)
     .fontSize(10)
-    .text("ACME Inc.", 200, 50, { align: "right" })
-    .text("123 Main Street", 200, 65, { align: "right" })
+    .text("fashionCulture Inc.", 200, 50, { align: "right" })
+    .text("123 Street Avenue", 200, 65, { align: "right" })
     .text("New York, NY, 10025", 200, 80, { align: "right" })
     .moveDown();
 }
@@ -51,25 +51,26 @@ function generateCustomerInformation(doc, receipt) {
     .font("Helvetica")
     .text("Receipt Date:", 50, customerInformationTop + 15)
     .text(formatDate(new Date()), 150, customerInformationTop + 15)
-    .text("Balance Due:", 50, customerInformationTop + 30)
+    .text("Total:", 50, customerInformationTop + 30)
     .text(
-      formatCurrency(receipt.subtotal - receipt.paid),
+      formatCurrency(receipt.total),
       150,
       customerInformationTop + 30
     )
 
     .font("Helvetica-Bold")
-    .text(receipt.shipping.name, 300, customerInformationTop)
+    .text(receipt.name, 300, customerInformationTop)
     .font("Helvetica")
-    .text(receipt.shipping.address, 300, customerInformationTop + 15)
+    .text(receipt.address, 300, customerInformationTop + 15)
     .text(
-      receipt.shipping.city +
-        ", " +
-        receipt.shipping.state +
-        ", " +
-        receipt.shipping.country,
-      300,
-      customerInformationTop + 30
+      receipt.city
+      // + 
+        // ", " +
+        // receipt.shipping.state +
+        // ", " +
+        // receipt.shipping.country,
+      // 300,
+      // customerInformationTop + 30
     )
     .moveDown();
 
@@ -85,7 +86,8 @@ function generateReceiptTable(doc, receipt) {
     doc,
     receiptTableTop,
     "Item",
-    "Description",
+    "Size",
+    "Color",
     "Unit Cost",
     "Quantity",
     "Line Total"
@@ -99,11 +101,12 @@ function generateReceiptTable(doc, receipt) {
     generateTableRow(
       doc,
       position,
-      item.item,
-      item.description,
-      formatCurrency(item.amount / item.quantity),
+      item.title,
+      item.size,
+      item.color,
+      formatCurrency(item.price / item.quantity),
       item.quantity,
-      formatCurrency(item.amount)
+      formatCurrency(item.price)
     );
 
     generateHr(doc, position + 20);
@@ -115,9 +118,10 @@ function generateReceiptTable(doc, receipt) {
     subtotalPosition,
     "",
     "",
-    "Subtotal",
     "",
-    formatCurrency(receipt.subtotal)
+    "",
+    "Subtotal",
+    formatCurrency(receipt.total)
   );
 
   const paidToDatePosition = subtotalPosition + 20;
@@ -126,41 +130,43 @@ function generateReceiptTable(doc, receipt) {
     paidToDatePosition,
     "",
     "",
-    "Paid To Date",
     "",
-    formatCurrency(receipt.paid)
+    "",
+    "Total",
+    formatCurrency(receipt.total)
   );
 
-  const duePosition = paidToDatePosition + 25;
-  doc.font("Helvetica-Bold");
-  generateTableRow(
-    doc,
-    duePosition,
-    "",
-    "",
-    "Balance Due",
-    "",
-    formatCurrency(receipt.subtotal - receipt.paid)
-  );
-  doc.font("Helvetica");
+  // const duePosition = paidToDatePosition + 25;
+  // doc.font("Helvetica-Bold");
+  // generateTableRow(
+  //   doc,
+  //   duePosition,
+  //   "",
+  //   "",
+  //   "Balance Due",
+  //   "",
+  //   formatCurrency(receipt.subtotal - receipt.paid)
+  // );
+  // doc.font("Helvetica");
 }
 
 function generateFooter(doc) {
-  doc
-    .fontSize(10)
-    .text(
-      "Payment is due within 15 days. Thank you for your business.",
-      50,
-      780,
-      { align: "center", width: 500 }
-    );
+  // doc
+  //   .fontSize(10)
+  //   .text(
+  //     "Payment is due within 15 days. Thank you for your business.",
+  //     50,
+  //     780,
+  //     { align: "center", width: 500 }
+  //   );
 }
 
 function generateTableRow(
   doc,
   y,
   item,
-  description,
+  size,
+  color,
   unitCost,
   quantity,
   lineTotal
@@ -168,10 +174,11 @@ function generateTableRow(
   doc
     .fontSize(10)
     .text(item, 50, y)
-    .text(description, 150, y)
-    .text(unitCost, 280, y, { width: 90, align: "right" })
-    .text(quantity, 370, y, { width: 90, align: "right" })
-    .text(lineTotal, 0, y, { align: "right" });
+    .text(size, 300, y)
+    .text(color, 330, y)
+    .text(unitCost, 340, y, { width: 90, align: "right" })
+    .text(quantity, 390, y, { width: 90, align: "right" })
+    .text(lineTotal, 400, y, { align: "right" });
 }
 
 function generateHr(doc, y) {
@@ -184,7 +191,7 @@ function generateHr(doc, y) {
 }
 
 function formatCurrency(cents) {
-  return "$" + (cents / 100).toFixed(2);
+  return "$" + (cents).toFixed(2);
 }
 
 function formatDate(date) {

@@ -162,36 +162,37 @@ i need the following api methods:
 /register which will be a post method
 */
 app.post('/generate-receipt', (req, res) => {
-  const receiptData = {
-    shipping: {
-      name: "John Doe",
-      address: "1234 Main Street",
-      city: "San Francisco",
-      state: "CA",
-      country: "US",
-      postal_code: 94111
-    },
-    items: [
-      {
-        item: "TC 100",
-        description: "Toner Cartridge",
-        quantity: 2,
-        amount: 6000
-      },
-      {
-        item: "USB_EXT",
-        description: "USB Cable Extender",
-        quantity: 1,
-        amount: 2000
-      }
-    ],
-    subtotal: 8000,
-    paid: 0,
-    receipt_nr: 1234
-  };
-
+  const receiptData = req.body;
+  // const receiptData = {
+  //   shipping: {
+  //     name: "John Doe",
+  //     address: "1234 Main Street",
+  //     city: "San Francisco",
+  //     state: "CA",
+  //     country: "US",
+  //     postal_code: 94111
+  //   },
+  //   items: [
+  //     {
+  //       item: "TC 100",
+  //       description: "Toner Cartridge",
+  //       quantity: 2,
+  //       amount: 6000
+  //     },
+  //     {
+  //       item: "USB_EXT",
+  //       description: "USB Cable Extender",
+  //       quantity: 1,
+  //       amount: 2000
+  //     }
+  //   ],
+  //   subtotal: 8000,
+  //   paid: 0,
+  //   receipt_nr: 1234
+  // };
+  receiptData.receipt_nr = Math.floor(Math.random() * 123456789);
   try {
-    const filePath = createReceipt(receiptData, "receipt.pdf");;
+    const filePath = createReceipt(receiptData, `receipt-${receiptData.receipt_nr}.pdf`);;
     res.status(200).json({ filePath: filePath });
   } catch (error) {
     console.error('Error generating invoice:', error);
