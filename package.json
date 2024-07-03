@@ -12,6 +12,8 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@google-cloud/storage": "^7.11.2",
+    "@stripe/stripe-js": "^4.0.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "connect-pg-simple": "^9.0.1",
@@ -21,6 +23,7 @@
     "knex": "^3.1.0",
     "nodemon": "^3.1.0",
     "pdfkit": "^0.15.0",
-    "pg": "^8.11.4"
+    "pg": "^8.11.4",
+    "stripe": "^16.1.0"
   }
 }

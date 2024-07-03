@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "fashionculture-428107",
+  "private_key_id": "064c8b954f93ccb80b3cc7e6a90eb2b2e68c8f03",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCzi+apkCOUkSsu\nodunc4U7YuY3857P1ew1pWUowwCv6DR1nqfRJyI7xUgYH3LPaiT0tFPLDQA8DN9X\nAjBdu95fsUZmrT4M9nTiO706p4pdqV0Xz91HcCrHmvJtvPcC4vtxS5W5s+P6YS9V\n4IdYj1RWiLG72ZK6cbd3TUhK/GlEDLgtnV1xUNyxduA/SduTIinUSiZVxTN6ElgV\nGyVHPSMfda7mChP6nwPwIRlASpFkJEWJF1xW88+PhTRf9ch+f4+CWD6FJ5831uGF\nxaHFtFqHuidd6L0FzmQQKPpqfe6Ng/iW3SEhJi0dEeg8NtEzbxuQofak9QxvOgK2\npNDdsbsLAgMBAAECggEAAJRSuCAAivj8EbU/s9GEv/3bM9N2MfCjy6uDqJvXNr8Q\n8fIRHiB131/edWvjWWVa3mBSu9RcjtYK4hrAV+T3nLoFlioYppZAcKP9IxFsOwK/\nwFadIvdlEHkgWxugKDNdAnT96yq+kg9QQ7WdFxitunCQigvV6hJ1SgQbzPlPErDu\nxowMJNknv+enUiu2V/e2x3xinyeEwWQz/yALZzHlv+MyLTZTvR4KraL3Q7JyJetN\nn10ehCJalB7UsznMJOzyfz0p8iLP1CalsZEalVZ0N2rOhj5euwlTfP/hz60ZpINu\nS1I6b1+QGo7PukvjVSFFDJQTiMyAk9Ijvm4mtg/9kQKBgQD2930k+fBPhXkItWAl\nQqUxGzw55Bi4Xin5vCpFOiexK9MAtrygPbO1zaC0bd0M7M+n8uXE0n9Atwc145ay\nNCq42WxdDK/FrvrSdMzgoUFTHDCSsIP/VbVYf9HT4kdkZLn7vbEFviuTncjPaivl\nK9Z60JlWWE8pmv9vHuxtRTeO8QKBgQC6HRy25+Z23Blaf5fHu7JugPdd0PWIq19z\nhLLd3aH+tDnF/VW2eKksNUvNDi1LpbUGO5fHnIzmTxk13rSmUngIICcBBEhC1gW1\naL9etoWJz8hyY7Wj8vtCfHkATY9UzqP5Cddtq8Bm4Fqo8wzgj1L9rCvnTUF9c3lZ\nkGMkFiNhuwKBgQD09zvMp5Y0aqJJfw8lJlwQv4EXsybKCaz9KCWNkUe5t0yOkrO7\nBjjxhkt3bNosbeD0KDy85EaQ/HtMerkJfjE6NYAFNAZNwWjNxElMLudK9tU/S5NC\ne9NrOy34S6Sg8kCAcgHbPmye+Y0sH5X2tWsDW1IdkW7ESBhCMpw1LskTIQKBgA9j\nlts8456SZnpIMJmwWHmwqkOUoqjRWswnfc7Ao8N2zYwkfXDgG0TvhzwGXxJxOj2w\nscUsma31fmUo7BEQoqIxXmhEHWGBZulwJtrDBtm1V6K1wfAziDkgJ7UxtJdTmtVd\nzfVgjUE0beqoZjkvQLJ/CQZQKgkggjk4qinytqw/AoGBAOABVFmD3zni4UvHNZ0c\n0U3Xhg3unfBJyA5EAFNJ24tlz3D2bRnTJizubmXP1S71ndIxff5lJnkg6V4jRRlt\n86/ybjyPqHIRpeWSmKJ4uD+ApZObn0kKmfMgEaMKJ97ItA+2NJE4PriegntXN+J4\nK9g2etnXfxij8GB9F6SFahU5\n-----END PRIVATE KEY-----\n",
+  "client_email": "fashionculture@fashionculture-428107.iam.gserviceaccount.com",
+  "client_id": "113346338010205154247",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/fashionculture%40fashionculture-428107.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

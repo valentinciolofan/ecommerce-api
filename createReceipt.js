@@ -8,7 +8,14 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export function createReceipt(receipt, path) {
+// Create receipts directory if it doesn't exist
+const receiptsDir = path.join(__dirname, 'receipts');
+if (!fs.existsSync(receiptsDir)) {
+  fs.mkdirSync(receiptsDir);
+}
+
+export function createReceipt(receipt, filename) {
+  const filePath = path.join(receiptsDir, filename);
   let doc = new PDFDocument({ size: "A4", margin: 50 });
 
   generateHeader(doc);
@@ -17,15 +24,15 @@ export function createReceipt(receipt, path) {
   generateFooter(doc);
 
   doc.end();
-  doc.pipe(fs.createWriteStream(path));
+  doc.pipe(fs.createWriteStream(filePath));
+
+  return filePath;
 }
 
 function generateHeader(doc) {
   doc
     .image("logo.png", 50, 45, { width: 150 })
     .fillColor("#444444")
-    // .fontSize(20)
-    // .text("fashionCulture Inc.", 110, 57)
     .fontSize(10)
     .text("fashionCulture Inc.", 200, 50, { align: "right" })
     .text("123 Street Avenue", 200, 65, { align: "right" })
@@ -52,26 +59,13 @@ function generateCustomerInformation(doc, receipt) {
     .text("Receipt Date:", 50, customerInformationTop + 15)
     .text(formatDate(new Date()), 150, customerInformationTop + 15)
     .text("Total:", 50, customerInformationTop + 30)
-    .text(
-      formatCurrency(receipt.total),
-      150,
-      customerInformationTop + 30
-    )
+    .text(formatCurrency(receipt.total), 150, customerInformationTop + 30)
 
     .font("Helvetica-Bold")
     .text(receipt.name, 300, customerInformationTop)
     .font("Helvetica")
     .text(receipt.address, 300, customerInformationTop + 15)
-    .text(
-      receipt.city
-      // + 
-        // ", " +
-        // receipt.shipping.state +
-        // ", " +
-        // receipt.shipping.country,
-      // 300,
-      // customerInformationTop + 30
-    )
+    .text(receipt.city)
     .moveDown();
 
   generateHr(doc, 252);
@@ -135,30 +129,9 @@ function generateReceiptTable(doc, receipt) {
     "Total",
     formatCurrency(receipt.total)
   );
-
-  // const duePosition = paidToDatePosition + 25;
-  // doc.font("Helvetica-Bold");
-  // generateTableRow(
-  //   doc,
-  //   duePosition,
-  //   "",
-  //   "",
-  //   "Balance Due",
-  //   "",
-  //   formatCurrency(receipt.subtotal - receipt.paid)
-  // );
-  // doc.font("Helvetica");
 }
 
 function generateFooter(doc) {
-  // doc
-  //   .fontSize(10)
-  //   .text(
-  //     "Payment is due within 15 days. Thank you for your business.",
-  //     50,
-  //     780,
-  //     { align: "center", width: 500 }
-  //   );
 }
 
 function generateTableRow(

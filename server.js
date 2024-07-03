@@ -9,6 +9,9 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import Stripe from 'stripe';
+import { Storage } from '@google-cloud/storage'
+import { sign } from 'crypto';
 const app = express();
 const port = 3000;
 app.use(express.json());
@@ -29,6 +32,12 @@ app.use(session({
     sameSite: 'Lax'
   }   
 }));
+
+const storage = new Storage({
+  keyFilename: './receipts/fashionculture-428107-064c8b954f93.json', // Path to your service account key file
+  projectId: 'fashionculture', // Your Google Cloud project ID
+});
+const bucketName = 'fashionculture_receipts';
 
 app.get("/", (req, res) => {
   let session = req.session.userId
@@ -161,44 +170,87 @@ i need the following api methods:
 /login --> get method
 /register which will be a post method
 */
-app.post('/generate-receipt', (req, res) => {
+app.post('/generate-receipt', async (req, res) => {
   const receiptData = req.body;
-  // const receiptData = {
-  //   shipping: {
-  //     name: "John Doe",
-  //     address: "1234 Main Street",
-  //     city: "San Francisco",
-  //     state: "CA",
-  //     country: "US",
-  //     postal_code: 94111
-  //   },
-  //   items: [
-  //     {
-  //       item: "TC 100",
-  //       description: "Toner Cartridge",
-  //       quantity: 2,
-  //       amount: 6000
-  //     },
-  //     {
-  //       item: "USB_EXT",
-  //       description: "USB Cable Extender",
-  //       quantity: 1,
-  //       amount: 2000
-  //     }
-  //   ],
-  //   subtotal: 8000,
-  //   paid: 0,
-  //   receipt_nr: 1234
-  // };
+  console.log(receiptData);
   receiptData.receipt_nr = Math.floor(Math.random() * 123456789);
   try {
-    const filePath = createReceipt(receiptData, `receipt-${receiptData.receipt_nr}.pdf`);;
-    res.status(200).json({ filePath: filePath });
+    const filename = `receipt-${receiptData.receipt_nr}.pdf`;
+    const filePath = createReceipt(receiptData, filename);
+
+    // Upload the PDF to Google Cloud Storage
+    const destFileName = filename;
+    await storage.bucket(bucketName).upload(filePath, {
+      destination: destFileName,
+    });
+
+    // Delete the local file after uploading
+    fs.unlinkSync(filePath);
+
+    const [signedUrl] = await storage.bucket(bucketName).file(destFileName).getSignedUrl({
+      action: 'read',
+      expires: '03-17-2025'
+    });
+
+    console.log(signedUrl);
+    const orderid = 1234;
+    await knex('receipts').insert({
+      order_id: orderid,
+      receipt_url: signedUrl
+    });
+
+    res.status(200).json({ message: 'Receipt generated and uploaded to Google Cloud Storage', filePath: `gs://${bucketName}/${destFileName}` });
   } catch (error) {
-    console.error('Error generating invoice:', error);
-    res.status(500).json({ error: 'Failed to generate invoice' });
+    console.error('Error generating or uploading receipt:', error);
+    res.status(500).json({ error: 'Failed to generate or upload receipt' });
   }
 });
+
+const stripe = new Stripe('sk_test_51PVVxaEZbF6dio7icCgvwPP0qU9FI4vlcqsvVJYQyqvU6Pn9AzC29gOVgPVXPgaW7OGak1RIpUBQNU6PVcaAmKOl00LwKjqpJp');
+
+app.post('/create-checkout-session', async (req, res) => {
+  const products = req.body.items.map(product => {
+    return {
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: product.title,
+        },
+        unit_amount: product.price * 100, // Amount in cents
+      },
+      quantity: product.quantity,
+    };
+  });
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: products,
+      mode: 'payment',
+      success_url: `http://localhost:4321/checkout/shipping/?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:4321/cart`
+    });
+
+    res.json({ id: session.id });
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
+});
+
+app.get('/check-payment-status/:sessionId', async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    res.json({ status: session.payment_status });
+  } catch (error) {
+    console.error('Error checking payment status:', error);
+    res.status(500).json({ error: 'Failed to check payment status' });
+  }
+});
+
+
 
 app.listen(port);
 
