@@ -174,6 +174,11 @@ app.post('/generate-receipt', async (req, res) => {
   const receiptData = req.body;
   console.log(receiptData);
   receiptData.receipt_nr = Math.floor(Math.random() * 123456789);
+  receiptData.address = 'Str. Martir Marius Ciopec nr.18';
+  receiptData.city = 'Timisoara, Timis';
+  receiptData.name = 'Ciolofan Valentin-Catalin';
+  receiptData.phone = '0759238389';
+  receiptData.items[1].title = 'MAN BLUE BLOUSE FIT';
   try {
     const filename = `receipt-${receiptData.receipt_nr}.pdf`;
     const filePath = createReceipt(receiptData, filename);
@@ -185,7 +190,7 @@ app.post('/generate-receipt', async (req, res) => {
     });
 
     // Delete the local file after uploading
-    fs.unlinkSync(filePath);
+    // fs.unlinkSync(filePath);
 
     const [signedUrl] = await storage.bucket(bucketName).file(destFileName).getSignedUrl({
       action: 'read',
@@ -249,6 +254,34 @@ app.get('/check-payment-status/:sessionId', async (req, res) => {
     res.status(500).json({ error: 'Failed to check payment status' });
   }
 });
+
+// orders management
+
+
+app.get('/orders-management', async (req, res) => {
+ knex('orders')
+  .insert({
+    id: Math.round(Math.random() * 99999),
+    user_id: 67,
+    order_date: new Date(),
+    total_amount: 300,
+    status: 'Pending',
+    receipt: '#23423423',
+    is_guest: true,
+    delivery_method: 'Courier',
+    receiver: 'Valentin Ciolofan',
+    address: 'Str. wieowoi hello world',
+    order_status: 'Pending',
+    mentions: 'test nothing hereeee'
+  }).then(console.log)
+
+  knex('orders')
+  .select('*')
+  .then(res => res.send(res));
+
+  res.send('200');
+})
+
 
 
 

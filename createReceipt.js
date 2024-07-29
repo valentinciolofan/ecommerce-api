@@ -66,6 +66,7 @@ function generateCustomerInformation(doc, receipt) {
     .font("Helvetica")
     .text(receipt.address, 300, customerInformationTop + 15)
     .text(receipt.city)
+    .text(receipt.phone)
     .moveDown();
 
   generateHr(doc, 252);
