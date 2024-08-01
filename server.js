@@ -258,32 +258,69 @@ app.get('/check-payment-status/:sessionId', async (req, res) => {
 // orders management
 
 
-app.get('/orders-management', async (req, res) => {
- knex('orders')
-  .insert({
-    id: Math.round(Math.random() * 99999),
-    user_id: 67,
-    order_date: new Date(),
-    total_amount: 300,
-    status: 'Pending',
-    receipt: '#23423423',
-    is_guest: true,
-    delivery_method: 'Courier',
-    receiver: 'Valentin Ciolofan',
-    address: 'Str. wieowoi hello world',
-    order_status: 'Pending',
-    mentions: 'test nothing hereeee'
-  }).then(console.log)
+app.get('/orders', async (req, res) => {
+//  knex('orders')
+//   .insert({
+//     id: Math.round(Math.random() * 99999),
+//     user_id: 67,
+//     order_date: new Date(),
+//     total_amount: 300,
+//     status: 'Delivered',
+//     receipt: '#23423423',
+//     is_guest: true,
+//     delivery_method: 'Courier',
+//     receiver: 'Valentin Ciolofan',
+//     address: 'Str. wieowoi hello world',
+//     order_status: 'Pending',
+//     mentions: 'test nothing hereeee'
+//   }).then(console.log)
 
   knex('orders')
-  .select('*')
-  .then(res => res.send(res));
+  .from('orders')
+  .then(orders => {
+    console.log(orders);
+    res.send(orders);
+  });
 
-  res.send('200');
 })
 
 
+app.get('/stats', async (req, res) => {
+  knex.select(
+    knex.raw('COUNT(DISTINCT users.id) AS total_users'),
+    knex.raw('COUNT(DISTINCT orders.receiver) AS total_customers'),
+    knex.raw('SUM(orders.total_amount) AS total_sales')
+  )
+  .from('users')
+  .leftJoin('orders', function() {
+    this.on('users.id', '=', 'orders.user_id');
+  })
+  .then(stats => res.send(stats[0]));
+}) 
 
+const updateOrderStatus = async (orderId, status) => {
+  try {
+    await knex('orders')
+      .where({ id: orderId })
+      .update({ order_status: status });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    throw error;
+  }
+};
+
+app.put('/api/orders/:orderId/status', async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  try {
+    await updateOrderStatus(orderId, status);
+    res.status(200).send({ message: 'Order status updated successfully' });
+  } catch (error) {
+    res.status(500).send({ message: 'Error updating order status', error });
+  }
+
+})
 
 app.listen(port);
 
