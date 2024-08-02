@@ -25,12 +25,12 @@ app.use(session({
   secret: 'your_secret_key', // A secret key for session encoding
   resave: false,              // Forces the session to be saved back to the session store
   saveUninitialized: true,    // Forces a session that is "uninitialized" to be saved to the store
-  cookie: { 
-    maxAge: 3600000, 
-    secure: process.env.NODE_ENV === 'production' ,
+  cookie: {
+    maxAge: 3600000,
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     sameSite: 'Lax'
-  }   
+  }
 }));
 
 const storage = new Storage({
@@ -100,10 +100,10 @@ app.post('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
       console.log(err);
-      res.status(500).json({'err': 'Error logging out'});
+      res.status(500).json({ 'err': 'Error logging out' });
     } else {
       console.log('Session after destruction:', req.session);
-      res.json({"loggedOut": "true"});
+      res.json({ "loggedOut": "true" });
     }
   });
 });
@@ -116,14 +116,14 @@ app.get('/check-session', (req, res) => {
       .from('users')
       .where('email', '=', req.session.userEmail)
       .then(response => {
-        res.json({"loggedIn": true, "status": 200,"userInfo": response[0] });
+        res.json({ "loggedIn": true, "status": 200, "userInfo": response[0] });
       })
       .catch(err => {
         console.error(err);
         res.status(500).send('Something went wrong..');
       });
   } else {
-    res.status(401).json({"loggedIn": false, "status": 401});
+    res.status(401).json({ "loggedIn": false, "status": 401 });
   }
 });
 
@@ -131,7 +131,7 @@ app.get('/check-session', (req, res) => {
 
 app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
-
+console.log(name, email, password);
   const salt = 10;
   const hash = bcrypt.hashSync(password, salt);
 
@@ -170,15 +170,29 @@ i need the following api methods:
 /login --> get method
 /register which will be a post method
 */
+const checkSession = async (req) => {
+  if (req.session && req.session.userEmail) {
+    try {
+      const response = await knex.select('*')
+        .from('users')
+        .where('email', '=', req.session.userEmail);
+        
+      if (response.length > 0) {
+        return { sessionStatus: true, user_id: response[0].id };
+      }
+    } catch (err) {
+      console.error(err);
+      return { sessionStatus: false, user_id: null };
+    }
+  }
+  return { sessionStatus: false, user_id: null };
+};
+
+
 app.post('/generate-receipt', async (req, res) => {
   const receiptData = req.body;
-  console.log(receiptData);
+  console.log(req.session);
   receiptData.receipt_nr = Math.floor(Math.random() * 123456789);
-  receiptData.address = 'Str. Martir Marius Ciopec nr.18';
-  receiptData.city = 'Timisoara, Timis';
-  receiptData.name = 'Ciolofan Valentin-Catalin';
-  receiptData.phone = '0759238389';
-  receiptData.items[1].title = 'MAN BLUE BLOUSE FIT';
   try {
     const filename = `receipt-${receiptData.receipt_nr}.pdf`;
     const filePath = createReceipt(receiptData, filename);
@@ -196,13 +210,24 @@ app.post('/generate-receipt', async (req, res) => {
       action: 'read',
       expires: '03-17-2025'
     });
+    // console.log(signedUrl);
 
-    console.log(signedUrl);
-    const orderid = 1234;
-    await knex('receipts').insert({
-      order_id: orderid,
-      receipt_url: signedUrl
-    });
+
+    let {sessionStatus, user_id} = await checkSession(req, res);
+    await knex('orders').insert({
+      receiver: `${receiptData.name} ${receiptData.surname}`,
+      address: receiptData.address,
+      total_amount: receiptData.total,
+      order_status: 'Pending',
+      mentions: receiptData.additionalInfo,
+      delivery_method: receiptData.delivery_method,
+      is_guest: sessionStatus,
+      user_id: user_id
+    })
+    // await knex('receipts').insert({
+    //   order_id: orderid,
+    //   receipt_url: signedUrl
+    // });
 
     res.status(200).json({ message: 'Receipt generated and uploaded to Google Cloud Storage', filePath: `gs://${bucketName}/${destFileName}` });
   } catch (error) {
@@ -259,44 +284,51 @@ app.get('/check-payment-status/:sessionId', async (req, res) => {
 
 
 app.get('/orders', async (req, res) => {
-//  knex('orders')
-//   .insert({
-//     id: Math.round(Math.random() * 99999),
-//     user_id: 67,
-//     order_date: new Date(),
-//     total_amount: 300,
-//     status: 'Delivered',
-//     receipt: '#23423423',
-//     is_guest: true,
-//     delivery_method: 'Courier',
-//     receiver: 'Valentin Ciolofan',
-//     address: 'Str. wieowoi hello world',
-//     order_status: 'Pending',
-//     mentions: 'test nothing hereeee'
-//   }).then(console.log)
+  //  knex('orders')
+  //   .insert({
+  //     id: Math.round(Math.random() * 99999),
+  //     user_id: 67,
+  //     order_date: new Date(),
+  //     total_amount: 300,
+  //     status: 'Delivered',
+  //     receipt: '#23423423',
+  //     is_guest: true,
+  //     delivery_method: 'Courier',
+  //     receiver: 'Valentin Ciolofan',
+  //     address: 'Str. wieowoi hello world',
+  //     order_status: 'Pending',
+  //     mentions: 'test nothing hereeee'
+  //   }).then(console.log)
 
   knex('orders')
-  .from('orders')
-  .then(orders => {
-    console.log(orders);
-    res.send(orders);
-  });
+    .from('orders')
+    .then(orders => {
+      res.send(orders);
+    });
 
 })
 
 
 app.get('/stats', async (req, res) => {
-  knex.select(
-    knex.raw('COUNT(DISTINCT users.id) AS total_users'),
-    knex.raw('COUNT(DISTINCT orders.receiver) AS total_customers'),
-    knex.raw('SUM(orders.total_amount) AS total_sales')
-  )
-  .from('users')
-  .leftJoin('orders', function() {
-    this.on('users.id', '=', 'orders.user_id');
-  })
-  .then(stats => res.send(stats[0]));
-}) 
+  try {
+    const stats = await knex('users')
+      .select(
+        knex.raw('(SELECT COUNT(DISTINCT users.id) FROM users) AS total_users'),
+        knex.raw('(SELECT COUNT(DISTINCT orders.receiver) FROM orders) AS total_customers'),
+        knex.raw('COALESCE((SELECT SUM(orders.total_amount) FROM orders), 0) AS total_sales')
+      )
+      .first();
+
+    res.status(200).json(stats);
+    console.log(stats);
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+
+
 
 const updateOrderStatus = async (orderId, status) => {
   try {
@@ -323,8 +355,6 @@ app.put('/api/orders/:orderId/status', async (req, res) => {
 })
 
 app.listen(port);
-
-
 
 
 
