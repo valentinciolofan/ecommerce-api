@@ -165,7 +165,7 @@ function generateHr(doc, y) {
 }
 
 function formatCurrency(cents) {
-  return "$" + (cents).toFixed(2);
+  return "$" + (cents);
 }
 
 function formatDate(date) {

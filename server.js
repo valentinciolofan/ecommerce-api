@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(cors({
   origin: 'http://localhost:4321',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
 }));
 
 app.use(session({
@@ -163,7 +163,11 @@ console.log(name, email, password);
   });
 });
 
-
+app.get('/api/profile/:profileId', async (req, res) => {
+  const profileData = await checkSession(req);
+  
+  res.send(profileData);
+});
 /*
 i need the following api methods:
 / which will return the website
@@ -178,7 +182,7 @@ const checkSession = async (req) => {
         .where('email', '=', req.session.userEmail);
         
       if (response.length > 0) {
-        return { sessionStatus: true, user_id: response[0].id };
+        return { sessionStatus: true, profileData: response[0] };
       }
     } catch (err) {
       console.error(err);
@@ -191,30 +195,31 @@ const checkSession = async (req) => {
 
 app.post('/generate-receipt', async (req, res) => {
   const receiptData = req.body;
-  console.log(req.session);
   receiptData.receipt_nr = Math.floor(Math.random() * 123456789);
+  console.log(receiptData)
   try {
     const filename = `receipt-${receiptData.receipt_nr}.pdf`;
-    const filePath = createReceipt(receiptData, filename);
+    // const filePath = createReceipt(receiptData, filename);
 
     // Upload the PDF to Google Cloud Storage
     const destFileName = filename;
-    await storage.bucket(bucketName).upload(filePath, {
-      destination: destFileName,
-    });
+    // await storage.bucket(bucketName).upload(filePath, {
+      // destination: destFileName,
+    // });
 
     // Delete the local file after uploading
     // fs.unlinkSync(filePath);
 
-    const [signedUrl] = await storage.bucket(bucketName).file(destFileName).getSignedUrl({
-      action: 'read',
-      expires: '03-17-2025'
-    });
+    // const [signedUrl] = await storage.bucket(bucketName).file(destFileName).getSignedUrl({
+      // action: 'read',
+      // expires: '03-17-2025'
+    // });
     // console.log(signedUrl);
 
-
-    let {sessionStatus, user_id} = await checkSession(req, res);
-    await knex('orders').insert({
+    let {sessionStatus, profileData} = await checkSession(req, res);
+    await knex('orders')
+    .returning('id')
+    .insert({
       receiver: `${receiptData.name} ${receiptData.surname}`,
       address: receiptData.address,
       total_amount: receiptData.total,
@@ -222,14 +227,15 @@ app.post('/generate-receipt', async (req, res) => {
       mentions: receiptData.additionalInfo,
       delivery_method: receiptData.delivery_method,
       is_guest: sessionStatus,
-      user_id: user_id
-    })
+      user_id: profileData.id
+    }).then(response => {
+      res.status(200).json({ id: response[0].id });
+    });
     // await knex('receipts').insert({
     //   order_id: orderid,
     //   receipt_url: signedUrl
     // });
 
-    res.status(200).json({ message: 'Receipt generated and uploaded to Google Cloud Storage', filePath: `gs://${bucketName}/${destFileName}` });
   } catch (error) {
     console.error('Error generating or uploading receipt:', error);
     res.status(500).json({ error: 'Failed to generate or upload receipt' });
@@ -354,9 +360,92 @@ app.put('/api/orders/:orderId/status', async (req, res) => {
 
 })
 
+
+
+app.patch('/update-profile', async (req, res) => {
+  const userEmail = req.session?.userEmail; // Assuming you have user email stored in session
+  if (!userEmail) {
+      console.error('Unauthorized: No userEmail in session');
+      return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const updates = req.body;
+console.log(updates);
+  try {
+      const updateResult = await knex('users')
+          .where({ email: userEmail })
+          .update(updates);
+
+      if (updateResult === 0) {
+          console.error('No rows updated, possible invalid userEmail');
+          return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.status(200).json({ message: 'Profile updated successfully' });
+  } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
 app.listen(port);
 
 
 
 
 
+
+
+// ========== 
+// PLAYGROUND
+// ========== 
+
+// const matchingStrings = (strings, queries) => {
+// work in progress
+
+// }
+
+// const lonelyinteger = (a) => {
+//   let array = a;
+  
+// }
+// lonelyinteger([1, 2, 3, 4, 3, 2, 1]);
+
+
+
+
+
+
+
+
+
+
+
+  // const timeConversion = (time) => {
+  //   let h = time.slice(0, 2);
+  //   let m = time.slice(3, 5);
+  //   let s = time.slice(6, 8);
+  //   const am_pm = time.slice(8, 10);
+  //   console.log(h, m, s);
+
+  //   const totalSeconds = (h * 60 * 60) + (m * 60) + s;
+  //   console.log(totalSeconds);
+  //   const convertedTime = (totalSeconds * 2) / 60 / 60;
+  //   console.log(convertedTime);
+  //   const militaryTime = `${h}:${m}:${s}${am_pm}`;
+  //   return militaryTime;
+  // }
+
+  // timeConversion('10:25:30PM');
+
+/*
+24 de ore intr o zi
+fiecare are 60 de minute
+cele 60 de minute au 60 de secunde
+cele 60 de secunde au 1000 milisecunde
+
+basically, intr-o zi sunt 86400
+in 12 ore sunt 43200
+
+cate milisecunde sunt intr-o ora?
+
+*/
