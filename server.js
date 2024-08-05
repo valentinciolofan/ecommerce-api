@@ -111,12 +111,27 @@ app.post('/logout', (req, res) => {
 app.get('/check-session', (req, res) => {
   // Check if the user is logged in
   if (req.session && req.session.userEmail) {
-
-    knex.select('*')
-      .from('users')
-      .where('email', '=', req.session.userEmail)
+    knex('users')
+      .where('users.email', '=', req.session.userEmail)
+      .leftJoin('orders', 'users.id', 'orders.user_id')
+      .select('users.*', 'orders.id as order_id', 'orders.order_date', 'orders.order_status')
       .then(response => {
-        res.json({ "loggedIn": true, "status": 200, "userInfo": response[0] });
+        if (response.length > 0) {
+          // Extract user info
+          const user = response[0];
+          const userInfo = {
+            ...user,
+            orders: response.map(order => ({
+              order_id: order.order_id,
+              order_date: order.order_date,
+              order_status: order.order_status
+            }))
+          };
+          console.log(userInfo);
+          res.json({ "loggedIn": true, "status": 200, "userInfo": userInfo });
+        } else {
+          res.json({ "loggedIn": false, "status": 401 });
+        }
       })
       .catch(err => {
         console.error(err);
@@ -126,6 +141,7 @@ app.get('/check-session', (req, res) => {
     res.status(401).json({ "loggedIn": false, "status": 401 });
   }
 });
+
 
 
 
@@ -163,9 +179,23 @@ console.log(name, email, password);
   });
 });
 
+app.post('/wishlist', async (req, res) => {
+  const { productSlug } = req.body;
+  const { userId } = req.session;
+
+  if (userId) {
+    knex('wishlist')
+    .insert({
+      user_id: userId,
+      product_slug: productSlug
+    })
+    .then(response => res.send('Product saved to wish list succesfully'))
+    .catch(err => console.log);
+  }
+});
+ 
 app.get('/api/profile/:profileId', async (req, res) => {
   const profileData = await checkSession(req);
-  
   res.send(profileData);
 });
 /*
@@ -285,7 +315,6 @@ app.get('/check-payment-status/:sessionId', async (req, res) => {
     res.status(500).json({ error: 'Failed to check payment status' });
   }
 });
-
 // orders management
 
 
@@ -313,8 +342,6 @@ app.get('/orders', async (req, res) => {
     });
 
 })
-
-
 app.get('/stats', async (req, res) => {
   try {
     const stats = await knex('users')
@@ -333,9 +360,6 @@ app.get('/stats', async (req, res) => {
   }
 });
 
-
-
-
 const updateOrderStatus = async (orderId, status) => {
   try {
     await knex('orders')
@@ -346,7 +370,6 @@ const updateOrderStatus = async (orderId, status) => {
     throw error;
   }
 };
-
 app.put('/api/orders/:orderId/status', async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
@@ -359,8 +382,6 @@ app.put('/api/orders/:orderId/status', async (req, res) => {
   }
 
 })
-
-
 
 app.patch('/update-profile', async (req, res) => {
   const userEmail = req.session?.userEmail; // Assuming you have user email stored in session
@@ -387,65 +408,5 @@ console.log(updates);
       res.status(500).json({ error: 'Failed to update profile' });
   }
 });
+
 app.listen(port);
-
-
-
-
-
-
-
-// ========== 
-// PLAYGROUND
-// ========== 
-
-// const matchingStrings = (strings, queries) => {
-// work in progress
-
-// }
-
-// const lonelyinteger = (a) => {
-//   let array = a;
-  
-// }
-// lonelyinteger([1, 2, 3, 4, 3, 2, 1]);
-
-
-
-
-
-
-
-
-
-
-
-  // const timeConversion = (time) => {
-  //   let h = time.slice(0, 2);
-  //   let m = time.slice(3, 5);
-  //   let s = time.slice(6, 8);
-  //   const am_pm = time.slice(8, 10);
-  //   console.log(h, m, s);
-
-  //   const totalSeconds = (h * 60 * 60) + (m * 60) + s;
-  //   console.log(totalSeconds);
-  //   const convertedTime = (totalSeconds * 2) / 60 / 60;
-  //   console.log(convertedTime);
-  //   const militaryTime = `${h}:${m}:${s}${am_pm}`;
-  //   return militaryTime;
-  // }
-
-  // timeConversion('10:25:30PM');
-
-/*
-24 de ore intr o zi
-fiecare are 60 de minute
-cele 60 de minute au 60 de secunde
-cele 60 de secunde au 1000 milisecunde
-
-basically, intr-o zi sunt 86400
-in 12 ore sunt 43200
-
-cate milisecunde sunt intr-o ora?
-
-*/
