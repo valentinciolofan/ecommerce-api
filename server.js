@@ -13,7 +13,7 @@ import Stripe from 'stripe';
 import { Storage } from '@google-cloud/storage'
 import { sign } from 'crypto';
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; 
 app.use(express.json());
 app.use(cors({
   origin: 'http://localhost:4321',
@@ -114,19 +114,56 @@ app.get('/check-session', (req, res) => {
     knex('users')
       .where('users.email', '=', req.session.userEmail)
       .leftJoin('orders', 'users.id', 'orders.user_id')
-      .select('users.*', 'orders.id as order_id', 'orders.order_date', 'orders.order_status')
+      .leftJoin('wishlist', 'users.id', 'wishlist.user_id')
+      .leftJoin('receipts', 'orders.id', 'receipts.order_id')
+      .select(
+        'users.*', 
+        'orders.id as order_id', 
+        'orders.order_date', 
+        'orders.order_status', 
+        'wishlist.product_slug',
+        'receipts.receipt_url'
+      )
       .then(response => {
         if (response.length > 0) {
           // Extract user info
           const user = response[0];
           const userInfo = {
-            ...user,
-            orders: response.map(order => ({
-              order_id: order.order_id,
-              order_date: order.order_date,
-              order_status: order.order_status
-            }))
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            birthdate: user.birthdate,
+            phone: user.phone,
+            county: user.county,
+            city: user.city,
+            address: user.address,
+            orders: [],
+            wishlist: []
           };
+
+          const ordersMap = new Map();
+          const wishlistSet = new Set();
+          
+          response.forEach(row => {
+            if (row.order_id) {
+              if (!ordersMap.has(row.order_id)) {
+                ordersMap.set(row.order_id, {
+                  order_id: row.order_id,
+                  order_date: row.order_date,
+                  order_status: row.order_status,
+                  receipt_url: row.receipt_url
+                });
+              }
+            }
+
+            if (row.product_slug && !wishlistSet.has(row.product_slug)) {
+              wishlistSet.add(row.product_slug);
+              userInfo.wishlist.push(row.product_slug);
+            }
+          });
+
+          userInfo.orders = Array.from(ordersMap.values());
+
           console.log(userInfo);
           res.json({ "loggedIn": true, "status": 200, "userInfo": userInfo });
         } else {
@@ -141,6 +178,10 @@ app.get('/check-session', (req, res) => {
     res.status(401).json({ "loggedIn": false, "status": 401 });
   }
 });
+
+
+
+
 
 
 
@@ -205,6 +246,7 @@ i need the following api methods:
 /register which will be a post method
 */
 const checkSession = async (req) => {
+  console.log(req.session);
   if (req.session && req.session.userEmail) {
     try {
       const response = await knex.select('*')
@@ -216,61 +258,64 @@ const checkSession = async (req) => {
       }
     } catch (err) {
       console.error(err);
-      return { sessionStatus: false, user_id: null };
+      return { sessionStatus: false, profileData: 'Guest' };
     }
   }
-  return { sessionStatus: false, user_id: null };
+  return { sessionStatus: false, profileData: 'Guest' };
 };
 
 
 app.post('/generate-receipt', async (req, res) => {
   const receiptData = req.body;
   receiptData.receipt_nr = Math.floor(Math.random() * 123456789);
-  console.log(receiptData)
   try {
     const filename = `receipt-${receiptData.receipt_nr}.pdf`;
-    // const filePath = createReceipt(receiptData, filename);
+    const filePath = createReceipt(receiptData, filename);
 
     // Upload the PDF to Google Cloud Storage
     const destFileName = filename;
-    // await storage.bucket(bucketName).upload(filePath, {
-      // destination: destFileName,
-    // });
+    await storage.bucket(bucketName).upload(filePath, {
+      destination: destFileName,
+    });
 
     // Delete the local file after uploading
     // fs.unlinkSync(filePath);
 
-    // const [signedUrl] = await storage.bucket(bucketName).file(destFileName).getSignedUrl({
-      // action: 'read',
-      // expires: '03-17-2025'
-    // });
-    // console.log(signedUrl);
-
-    let {sessionStatus, profileData} = await checkSession(req, res);
-    await knex('orders')
-    .returning('id')
-    .insert({
-      receiver: `${receiptData.name} ${receiptData.surname}`,
-      address: receiptData.address,
-      total_amount: receiptData.total,
-      order_status: 'Pending',
-      mentions: receiptData.additionalInfo,
-      delivery_method: receiptData.delivery_method,
-      is_guest: sessionStatus,
-      user_id: profileData.id
-    }).then(response => {
-      res.status(200).json({ id: response[0].id });
+    const [signedUrl] = await storage.bucket(bucketName).file(destFileName).getSignedUrl({
+      action: 'read',
+      expires: '03-17-2025'
     });
-    // await knex('receipts').insert({
-    //   order_id: orderid,
-    //   receipt_url: signedUrl
-    // });
 
+    console.log(signedUrl);
+    let { sessionStatus, profileData } = await checkSession(req);
+
+    const placeOrderIntoDb = await knex('orders')
+      .returning('id')
+      .insert({
+        receiver: `${receiptData.name} ${receiptData.surname}`,
+        address: receiptData.address,
+        total_amount: receiptData.total,
+        order_status: 'Pending',
+        mentions: receiptData.additionalInfo,
+        delivery_method: receiptData.delivery_method,
+        is_guest: sessionStatus,
+        user_id: profileData.id
+      });
+
+    const orderId = placeOrderIntoDb[0].id;
+
+    await knex('receipts').insert({
+      order_id: orderId,
+      receipt_url: signedUrl
+    });
+    // Sending the response after all operations are complete
+    res.status(200).json({ id: orderId, receipt_url: signedUrl });
   } catch (error) {
     console.error('Error generating or uploading receipt:', error);
     res.status(500).json({ error: 'Failed to generate or upload receipt' });
   }
 });
+
 
 const stripe = new Stripe('sk_test_51PVVxaEZbF6dio7icCgvwPP0qU9FI4vlcqsvVJYQyqvU6Pn9AzC29gOVgPVXPgaW7OGak1RIpUBQNU6PVcaAmKOl00LwKjqpJp');
 
@@ -389,7 +434,6 @@ app.patch('/update-profile', async (req, res) => {
       console.error('Unauthorized: No userEmail in session');
       return res.status(401).json({ error: 'Unauthorized' });
   }
-
   const updates = req.body;
 console.log(updates);
   try {
