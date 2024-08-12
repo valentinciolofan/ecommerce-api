@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Summary</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0;">
+  <div style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 5px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+    <div style="background-color: #007bff; color: #ffffff; padding: 20px; text-align: center;">
+      <h1 style="margin: 0; font-size: 24px;">Thank You for Your Order #{{order_id}}!</h1>
+    </div>
+    <div style="padding: 20px;">
+      <h2 style="font-size: 20px; color: #007bff; margin-top: 0;">Hi {{name}},</h2>
+      <p>Thank you for shopping with us! Below is the summary of your order:</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr style="background-color: #f4f4f4; font-weight: bold;">
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Product</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Quantity</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Price</th>
+            <th style="border: 1px solid #dddddd; text-align: left; padding: 8px;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{{orderItems}}}  <!-- Use triple braces to render raw HTML -->
+        </tbody>
+      </table>
+
+      <p style="margin-top: 20px; font-size: 18px; font-weight: bold; text-align: right;">Total Amount: ${{totalAmount}}</p>
+
+      <p>If you have any questions or concerns, feel free to <a href="mailto:valentincatalin02@gmail.com" style="color: #007bff; text-decoration: none;">contact us</a>.</p>
+      <p>We hope to see you again soon!</p>
+    </div>
+    <div style="background-color: #f4f4f4; color: #777; text-align: center; padding: 20px; font-size: 14px;">
+      <p>&copy; 2024 fashionCulture. All rights reserved.</p>
+      <p><a href="http://localhost:4321" style="color: #007bff; text-decoration: none;">Visit our website</a></p>
+    </div>
+  </div>
+</body>
+</html>
