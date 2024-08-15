@@ -194,21 +194,42 @@ app.post('/wishlist', async (req, res) => {
         user_id: userId,
         product_slug: productSlug
       })
-      .then(response => res.send('Product saved to wish list succesfully'))
+      .then(response => res.send({ 'success': 'Product saved to wish list succesfully'}))
       .catch(err => console.log);
+  } else {
+    return res.status(401).json({ error: 'Unauthorized: No user logged in' });
   }
 });
 
 app.patch('/remove-wishlist-product', async (req, res) => {
-  const {slug} = req.body;
-  console.log(req.body);
+  const { slug } = req.body;
 
-  console.log(slug)
-  await knex('wishlist')
-  .delete('*')
-  .where('product_slug', '=', slug).then(console.log);
-  res.send({"message": "OK"});
-})
+  try {
+    // Ensure the user is logged in
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ error: 'Unauthorized: No user logged in' });
+    }
+
+    // Delete the product from the wishlist
+    const result = await knex('wishlist')
+      .where('product_slug', '=', slug)
+      .andWhere('user_id', '=', req.session.userId)
+      .delete();
+
+    if (result === 0) {
+      // No rows were affected, meaning the item was not found in the wishlist
+      return res.status(404).json({ error: 'Product not found in wishlist' });
+    }
+
+    // If successful, send a success message
+    return res.status(200).json({ status: 'OK', message: 'Product removed from wishlist' });
+  } catch (error) {
+    // Log and send the error message
+    console.error('Error removing product from wishlist:', error);
+    return res.status(500).json({ error: 'Failed to remove product from wishlist' });
+  }
+});
+
 const checkSession = async (req) => {
   console.log(req.session);
   if (req.session && req.session.userEmail) {
