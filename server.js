@@ -13,6 +13,7 @@ import Stripe from 'stripe';
 import { Storage } from '@google-cloud/storage'
 // import { sign } from 'crypto';
 import { sendOrderSummary } from './sendMail.js';
+import { client } from './sanityClient.js';
 const app = express();
 app.use(express.json());
 app.use(cors({
@@ -188,11 +189,6 @@ app.post('/wishlist', async (req, res) => {
   const { productSlug } = req.body;
   const { userId } = req.session;
 
-// 1). Verificam daca userul este logat
-// 2). Verificam daca produsul este in wishlist
-// 3). If it is, we fill the svg with black color
-// 4). Daca nu este, o coloram si adaugam cand userul apasa pe element
-
   if (userId) {
     knex('wishlist')
       .insert({
@@ -256,18 +252,10 @@ const checkSession = async (req) => {
   return { sessionStatus: false, profileData: 'Guest' };
 };
 
-/*
-1). Vin datele comenzii din front end
-2). Bag datele din front-end in baza de date
-3). Generez factura
-4). Salvez datele facturii in receipts
-5). Trimite mail-ul cu link-ul de la factura 
-
-
-*/
 app.post('/generate-receipt', async (req, res) => {
   try {
     const receiptData = req.body;
+    console.log(receiptData);
     let { sessionStatus, profileData } = await checkSession(req);
 
     const insertOrderIntoDb = await knex('orders')
@@ -297,6 +285,7 @@ app.post('/generate-receipt', async (req, res) => {
     // receiptData.receipt_url = await uploadReceiptToCloud(filename, filePath);
 
     await sendOrderSummary(receiptData.email, receiptData, orderId, filename, filePath);
+      const stockUpdateResult = await updateStockLevel(receiptData.items);
 
     // Sending the response after all operations are complete
     res.status(200).json({ 'message': 'Order placed successfully' })
@@ -337,6 +326,72 @@ const uploadReceiptToCloud = async (fileName, filePath) => {
 
   return signedUrl;
 }
+
+const updateStockLevel = async (orderItems) => {
+  try {
+    // Validate that orderItems is an array
+    if (!Array.isArray(orderItems)) {
+      throw new Error('orderItems should be an array');
+    }
+
+    // Group items by slug and size to ensure correct stock update
+    const groupedItems = orderItems.reduce((acc, item) => {
+      const key = `${item.slug}-${item.size}`;
+      if (!acc[key]) {
+        acc[key] = { ...item };
+      } else {
+        acc[key].quantity += item.quantity;
+      }
+      return acc;
+    }, {});
+
+    for (const key in groupedItems) {
+      const item = groupedItems[key];
+
+      if (item && item.size && item.slug) {
+        const { slug, size, quantity } = item;
+
+        // Fetch the product from Sanity by slug
+        const product = await client.fetch(
+          `*[_type == "product" && slug.current == $slug][0]`,
+          { slug }
+        );
+
+        if (product) {
+          // Find the size object in the product's sizes array
+          const sizeIndex = product.sizes.findIndex((s, i) => i % 2 === 0 && s === size);
+
+          if (sizeIndex !== -1) {
+            const updatedStock = product.sizes[sizeIndex + 1] - quantity;
+
+            if (updatedStock >= 0) {
+              // Update the stock in the Sanity document
+              const updatedSizes = [...product.sizes];
+              updatedSizes[sizeIndex + 1] = updatedStock;
+
+              await client
+                .patch(product._id)
+                .set({ sizes: updatedSizes })
+                .commit();
+
+              console.log(`Updated stock for ${slug} - size ${size} to ${updatedStock}`);
+            } else {
+              console.error(`Not enough stock for ${slug} - size ${size}`);
+            }
+          } else {
+            console.error(`Size ${size} not found for product ${slug}`);
+          }
+        } else {
+          console.error(`Product with slug ${slug} not found`);
+        }
+      } else {
+        console.error('Invalid item data:', item);
+      }
+    }
+  } catch (error) {
+    console.error('Error updating stock:', error.message);
+  }
+};
 
 
 app.post('/create-checkout-session', async (req, res) => {
