@@ -188,13 +188,20 @@ app.post('/wishlist', async (req, res) => {
   const { productSlug } = req.body;
   const { userId } = req.session;
 
+// 1). Verificam daca userul este logat
+// 2). Verificam daca produsul este in wishlist
+// 3). If it is, we fill the svg with black color
+// 4). Daca nu este, o coloram si adaugam cand userul apasa pe element
+
   if (userId) {
     knex('wishlist')
       .insert({
         user_id: userId,
         product_slug: productSlug
       })
-      .then(response => res.send({ 'success': 'Product saved to wish list succesfully'}))
+      .then(response => {
+        res.send({ 'success': 'Product saved to wish list succesfully'});
+      })
       .catch(err => console.log);
   } else {
     return res.status(401).json({ error: 'Unauthorized: No user logged in' });
