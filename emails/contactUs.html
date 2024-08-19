@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us Message</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .email-container {
+            width: 100%;
+            padding: 20px;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+        }
+
+        .email-content {
+            max-width: 600px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+        }
+
+        .header {
+            background-color: #007bff;
+            padding: 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .body-content {
+            padding: 20px;
+        }
+
+        .body-content h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #007bff;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #007bff;
+        }
+
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background-color: #f4f4f4;
+            color: #666666;
+            font-size: 12px;
+        }
+
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="email-content">
+            <div class="header">
+                <h1>New Contact Us Message</h1>
+            </div>
+            <div class="body-content">
+                <h2>Message from {{name}} ({{email}})</h2>
+                <div class="message">
+                    <p>{{message}}</p>
+                </div>
+            </div>
+            <div class="footer">
+                <p>&copy; 2024 fashionCulture. All rights reserved.</p>
+                <p><a href="https://localhost:4321">Visit our website</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

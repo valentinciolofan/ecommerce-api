@@ -12,7 +12,7 @@ import { dirname } from 'path';
 import Stripe from 'stripe';
 import { Storage } from '@google-cloud/storage'
 // import { sign } from 'crypto';
-import { sendOrderSummary } from './sendMail.js';
+import { sendOrderSummary, contactUsMail } from './sendMail.js';
 import { client } from './sanityClient.js';
 const app = express();
 app.use(express.json());
@@ -48,6 +48,25 @@ const stripe = new Stripe('sk_test_51PVVxaEZbF6dio7icCgvwPP0qU9FI4vlcqsvVJYQyqvU
 
 //   }
 // });
+
+app.post('/contact', async (req, res) => {
+  const { name, email, message } = req.body;
+
+  // Check if all required fields are filled
+  if (!email || !name || !message) {
+    res.status(400).send('You need to fill all input fields!');
+    return; // Exit the function early if validation fails
+  }
+  
+  try {
+    await contactUsMail(email, name, message);
+    res.sendStatus(200); // Respond with 200 OK if the email is sent successfully
+  } catch (error) {
+    console.error('Error sending contact email:', error);
+    res.status(500).send('There was an error sending your message. Please try again later.');
+  }
+});
+
 app.post('/login', async (req, res) => {
   const { email, password, remember } = req.body;
   try {

@@ -47,7 +47,6 @@ const sendOrderSummary = async (email, orderData, order_id, filename, filePath) 
     ],
   };
   
-
   try {
     await transporter.sendMail(mailOptions);
     console.log('Email sent successfully');
@@ -55,6 +54,32 @@ const sendOrderSummary = async (email, orderData, order_id, filename, filePath) 
     console.error('Error sending email:', error);
   }
 };
-
-export { sendOrderSummary };
+// contactUsMail
+const contactUsMail = async (email, userName, message) => {
   
+  const htmlContent = loadTemplate('contactUs', {
+    name: userName,
+    message: message,
+    email: email
+  });
+
+  const mailOptions = {
+    from: email,
+    to: process.env.EMAIL_USER,
+    subject: `New Contact Us Message from ${userName}`,
+    replyTo: email,
+    html: htmlContent,
+  };
+  
+  try {
+    await transporter.sendMail(mailOptions);
+    return 'OK';
+  } catch (error) {
+    return `Error sending contact email: ${error}`;
+  }
+};
+export { sendOrderSummary, contactUsMail };
+  
+
+
+
