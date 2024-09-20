@@ -42,7 +42,7 @@ const generateReceiptNr = async (receiptId) => {
 const uploadReceiptToCloud = async (fileName, filePath) => {
     try {
         const storage = new Storage({
-            keyFilename: path.resolve(__dirname, '../receipts/still-dynamics-428107-g2-6944800978cc.json'),  // Ensure correct path to the JSON credentials
+            keyFilename: path.resolve(__dirname, `../receipts/${process.env.GOOGLE_CLOUD_PATH}`),  // Ensure correct path to the JSON credentials
             projectId: 'still-dynamics-428107-g2',
         });
         const bucketName = 'test-ecomm-123';
