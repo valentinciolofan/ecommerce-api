@@ -5,6 +5,10 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { client } from '../sanityClient.js';
+import mime from 'mime-types';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,31 +45,42 @@ const generateReceiptNr = async (receiptId) => {
 // Upload the generated receipt to Google Cloud Storage and return the signed URL
 const uploadReceiptToCloud = async (fileName, filePath) => {
     try {
+        // Correctly resolve the path to the service account JSON file
+        const credentialsPath = path.join(__dirname, process.env.GOOGLE_CLOUD_PATH);
+
+        // Initialize Google Cloud Storage client using credentials from the .env file
         const storage = new Storage({
-            keyFilename: path.resolve(__dirname, `../receipts/${process.env.GOOGLE_CLOUD_PATH}`),  // Ensure correct path to the JSON credentials
-            projectId: 'still-dynamics-428107-g2',
+            keyFilename: credentialsPath, // Resolve path correctly
+            projectId: process.env.GOOGLE_CLOUD_PROJECT_ID, // Load project ID from .env
         });
-        const bucketName = 'test-ecomm-123';
+
+        const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME; // Load bucket name from .env
         const destFileName = fileName;
 
+        // Determine the content type of the file dynamically
+        const contentType = mime.lookup(filePath) || 'application/octet-stream';
+
+        // Upload the file to Google Cloud Storage
         await storage.bucket(bucketName).upload(filePath, {
             destination: destFileName,
             metadata: {
-                contentType: 'application/pdf',
+                contentType: contentType, // Set content type dynamically
             },
         });
 
+        // Generate a signed URL for the uploaded file
         const [signedUrl] = await storage.bucket(bucketName).file(destFileName).getSignedUrl({
-            action: 'read',
-            expires: '03-17-2025',
+            action: 'read', // Set file to be readable
+            expires: '03-17-2025', // Expiration date for signed URL
         });
 
-        return signedUrl;
+        return signedUrl; // Return the signed URL
     } catch (error) {
-        console.error('Error during file upload to Cloud Storage:', error);
-        throw new Error('Failed to upload receipt to cloud');
+        console.error('Error during file upload to Cloud Storage:', error.message); // Log error details
+        throw new Error('Failed to upload receipt to cloud'); // Throw an error for higher-level handling
     }
 };
+
 
 // Update the stock levels for each product in the order
 const updateStockLevel = async (orderItems) => {
