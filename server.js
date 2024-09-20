@@ -17,12 +17,24 @@ import { handleUpdateProfile } from './controllers/updateProfile.js';
 
 const app = express();
 app.use(express.json());
+
+// Allow your local frontend (localhost:4321) and other origins (like a future production URL)
+const allowedOrigins = ['http://localhost:4321'];
+
 app.use(cors({
-  origin: 'http://localhost:4321',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: function (origin, callback) {
+    // Allow requests from your local frontend
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Allow credentials (like cookies)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
+
 app.use(session({
   secret: 'your_secret_key', // A secret key for session encoding
   resave: false,              // Forces the session to be saved back to the session store
