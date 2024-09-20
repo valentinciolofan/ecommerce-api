@@ -1,7 +1,7 @@
 import express from 'express';
 import knex from 'knex';
 import cors from 'cors';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import { handleLogin } from './controllers/login.js';
