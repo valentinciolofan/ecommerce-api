@@ -14,19 +14,31 @@ if (!fs.existsSync(receiptsDir)) {
   fs.mkdirSync(receiptsDir);
 }
 
-export function createReceipt(receipt, filename) {
+export async function createReceipt(receipt, filename) {
   const filePath = path.join(receiptsDir, filename);
-  let doc = new PDFDocument({ size: "A4", margin: 50 });
+  const doc = new PDFDocument({ size: "A4", margin: 50 });
 
-  generateHeader(doc);
-  generateCustomerInformation(doc, receipt);
-  generateReceiptTable(doc, receipt);
-  generateFooter(doc);
+  // Create a promise to handle the completion of the PDF generation
+  return new Promise((resolve, reject) => {
+    const writeStream = fs.createWriteStream(filePath);
 
-  doc.end();
-  doc.pipe(fs.createWriteStream(filePath));
+    writeStream.on('finish', () => {
+      resolve(filePath);
+    });
 
-  return filePath;
+    writeStream.on('error', (error) => {
+      reject(error);
+    });
+
+    doc.pipe(writeStream);
+
+    generateHeader(doc);
+    generateCustomerInformation(doc, receipt);
+    generateReceiptTable(doc, receipt);
+    generateFooter(doc);
+
+    doc.end(); // End the PDF generation
+  });
 }
 
 function generateHeader(doc) {
@@ -148,8 +160,8 @@ function generateTableRow(
   doc
     .fontSize(10)
     .text(item, 50, y)
-    .text(size, 300, y)
-    .text(color, 330, y)
+    .text(size.charAt(0).toUpperCase(), 300, y)
+    .text(color.charAt(0).toUpperCase() + color.slice(1), 330, y)
     .text(unitCost, 340, y, { width: 90, align: "right" })
     .text(quantity, 390, y, { width: 90, align: "right" })
     .text(lineTotal, 400, y, { align: "right" });
