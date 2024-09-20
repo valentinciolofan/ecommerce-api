@@ -7,23 +7,34 @@ export const handleLogin = async (req, res, knex, bcrypt) => {
             .where('email', '=', email)
             .then(response => {
                 if (!response.length) {
-                    res.sendStatus(401);
+                    // No user found, respond with 401 Unauthorized
+                    return res.sendStatus(401);
                 }
                 bcrypt.compare(password, response[0].hash).then(function (result) {
                     return result;
                 }).then(isValid => {
                     if (isValid) {
+                        // Set session data and adjust cookie expiry based on "remember me"
                         req.session.userId = response[0].id;
                         req.session.userEmail = response[0].email;
                         if (remember !== undefined) {
-                            console.log(req.session);
-                            req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+                            req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
                         }
+                        // Respond with success message and redirect info
                         return res.status(200).json({ message: 'Logged in!', redirect: '/shop' });
+                    } else {
+                        // Invalid password
+                        return res.status(401).json({ message: 'Invalid credentials' });
                     }
                 });
+            })
+            .catch(err => {
+                // Handle any unexpected errors
+                console.error("Error during login", err);
+                return res.status(500).json({ message: 'Error during login' });
             });
     } catch (err) {
-        res.status(401);
+        console.error('Unexpected error:', err);
+        return res.status(500).json({ message: 'Unexpected error' });
     }
-}
+};
