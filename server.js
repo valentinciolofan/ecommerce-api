@@ -72,8 +72,16 @@ app.use(session({
 }));
 
 // Test route to check if the server is running
-app.get('/', (req, res) => res.send('It is working now'));
+app.get('/', async (req, res) => {
+  const orders = await knex('orders');
 
+  if (orders.length) {
+    res.send(orders);
+  } else {
+    res.send('it isnt working');
+  }
+
+});
 // Define routes for your API
 app.post('/contact', (req, res) => handleContact(req, res));
 app.post('/login', (req, res) => handleLogin(req, res, db, bcrypt));
