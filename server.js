@@ -34,7 +34,7 @@ app.use(session({
   }
 }));
 
-
+app.get('/', (req, res) => res.send('It is working now'))
 app.post('/contact', (req, res) => handleContact(req, res));
 app.post('/login', (req, res) => handleLogin(req, res, knex, bcrypt));
 app.post('/logout', (req, res) => handleLogOut(req, res));
