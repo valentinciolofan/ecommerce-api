@@ -21,7 +21,7 @@ app.use(express.json());
 
 
 app.use(cors({
-  origin: '*', // allow any domains for testing only
+  origin: '*', // allow any domains for testing
   credentials: true, // Allow credentials (like cookies)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
@@ -41,6 +41,7 @@ app.use(
     },
   })
 );
+app.options('*', cors()); // Preflight requests for all routes
 
 // Test route to check if the server is running
 app.get('/', async (req, res) => {
