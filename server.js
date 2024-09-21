@@ -1,7 +1,7 @@
 import express from "express";
 import session from "express-session";
-import { ConnectSessionKnexStore } from "connect-session-knex";
 import knex from "knex"; // Import your existing knex instance from knex.js
+import connectPgSimple from "connect-pg-simple";
 import bcrypt from 'bcryptjs';
 import cors from 'cors';
 
@@ -21,7 +21,7 @@ app.use(express.json());
 
 // http://127.0.0.1:4321
 app.use(cors({
-  origin: 'http://localhost:4321', // allow any domains for testing
+  origin: 'http://127.0.0.1:4321', // allow any domains for testing
   credentials: true, // Allow credentials (like cookies)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
@@ -30,6 +30,10 @@ app.use(cors({
 // Configure session management using ConnectSessionKnexStore
 app.use(
   session({
+    store: new connectPgSimple({
+      pool: knex,                // Connection pool
+      tableName: 'session'         // Defaults to 'session'
+    }),
     secret: "your_secret_key", // Replace with your secret key
     resave: false, // Don't resave session if it hasn't been modified
     saveUninitialized: false, // Only save sessions that are initialized
@@ -72,3 +76,4 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
