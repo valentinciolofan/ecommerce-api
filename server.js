@@ -46,7 +46,7 @@ app.use(
     saveUninitialized: false, // Only save sessions that are initialized
     cookie: {
       maxAge: 3600000, // 1 hour session expiration
-      secure: process.env.NODE_ENV === 'production', // Ensure cookies are only sent over HTTPS in production
+      secure: true, // Ensure cookies are only sent over HTTPS in production
       httpOnly: true, // Make cookie inaccessible to JavaScript
       sameSite: false, // Prevent CSRF by only sending cookies on same-site requests
     },
