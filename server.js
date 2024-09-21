@@ -21,7 +21,7 @@ app.use(express.json());
 
 
 app.use(cors({
-  origin: 'http://localhost:4321',
+  origin: '*', // allow any domains for testing only
   credentials: true, // Allow credentials (like cookies)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
