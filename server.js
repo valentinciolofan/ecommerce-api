@@ -2,6 +2,7 @@ import express from "express";
 import session from "express-session";
 import knex from "knex"; // Import your existing knex instance from knex.js
 import pgSession from "connect-pg-simple";
+import pg from 'pg'
 import bcrypt from 'bcryptjs';
 import cors from 'cors';
 
