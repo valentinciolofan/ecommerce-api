@@ -48,7 +48,7 @@ app.use(
       maxAge: 3600000, // 1 hour session expiration
       secure: false, // Ensure cookies are only sent over HTTPS in production
       httpOnly: true, // Make cookie inaccessible to JavaScript
-      sameSite: false, // Prevent CSRF by only sending cookies on same-site requests
+      sameSite: 'None', // Prevent CSRF by only sending cookies on same-site requests
     },
   })
 );
