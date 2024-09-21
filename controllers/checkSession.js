@@ -1,4 +1,5 @@
 export const handleCheckSession = (req, res, knex) => {
+    console.log(req.session);
     if (req.session && req.session.userEmail) {
         knex('users')
             .where('users.email', '=', req.session.userEmail)
@@ -59,7 +60,8 @@ export const handleCheckSession = (req, res, knex) => {
                     userInfo.orders = Array.from(ordersMap.values());
                     res.json({ "loggedIn": true, "status": 200, "userInfo": userInfo });
                 } else {
-                    res.json({ "loggedIn": false, "status": 401 });
+                    
+                    res.json({ "loggedIn": false, "status": 401, "response": `${response}` });
                 }
             })
             .catch(err => {

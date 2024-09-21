@@ -47,8 +47,8 @@ app.use(
     cookie: {
       maxAge: 3600000, // 1 hour session expiration
       secure: process.env.NODE_ENV === 'production', // Ensure cookies are only sent over HTTPS in production
-      httpOnly: false, // Make cookie inaccessible to JavaScript
-      sameSite: 'Lax', // Prevent CSRF by only sending cookies on same-site requests
+      httpOnly: true, // Make cookie inaccessible to JavaScript
+      sameSite: false, // Prevent CSRF by only sending cookies on same-site requests
     },
   })
 );
