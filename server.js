@@ -20,9 +20,8 @@ import { handleUpdateProfile } from './controllers/updateProfile.js';
 const app = express();
 app.use(express.json());
 
-// http://127.0.0.1:4321
 app.use(cors({
-  origin: 'http://localhost:4321', // allow any domains for testing
+  origin: 'https://ecommerce-ten-rose-33.vercel.app', // allow any domains for testing
   credentials: true, // Allow credentials (like cookies)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
@@ -46,7 +45,7 @@ app.use(
     saveUninitialized: false, // Only save sessions that are initialized
     cookie: {
       maxAge: 3600000, // 1 hour session expiration
-      secure: false, // Ensure cookies are only sent over HTTPS in production
+      secure: true, // Ensure cookies are only sent over HTTPS in production
       httpOnly: true, // Make cookie inaccessible to JavaScript
       sameSite: 'None', // Prevent CSRF by only sending cookies on same-site requests
     },
