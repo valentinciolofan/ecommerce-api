@@ -19,9 +19,9 @@ import { handleUpdateProfile } from './controllers/updateProfile.js';
 const app = express();
 app.use(express.json());
 
-
+// http://127.0.0.1:4321
 app.use(cors({
-  origin: '*', // allow any domains for testing
+  origin: 'http://localhost:4321', // allow any domains for testing
   credentials: true, // Allow credentials (like cookies)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
