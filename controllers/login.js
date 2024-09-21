@@ -17,6 +17,7 @@ export const handleLogin = async (req, res, knex, bcrypt) => {
                         // Set session data and adjust cookie expiry based on "remember me"
                         req.session.userId = response[0].id;
                         req.session.userEmail = response[0].email;
+                        console.log("req login:", req.session);
                         if (remember !== undefined) {
                             req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
                         }
