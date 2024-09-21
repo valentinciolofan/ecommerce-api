@@ -1,7 +1,7 @@
 import express from "express";
 import session from "express-session";
 import knex from "knex"; // Import your existing knex instance from knex.js
-import connectPgSimple from "connect-pg-simple";
+import pgSession from "connect-pg-simple";
 import bcrypt from 'bcryptjs';
 import cors from 'cors';
 
@@ -27,12 +27,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
 
-// Configure session management using ConnectSessionKnexStore
+// Configure session management using ConnectPgSimple
+const PgSession = pgSession(session); 
 app.use(
   session({
-    store: new connectPgSimple({
-      pool: knex,                // Connection pool
-      tableName: 'session'         // Defaults to 'session'
+    store: new PgSession({
+      pool: knex,                // Your Knex connection pool
+      tableName: 'session'        // Table name for storing sessions
     }),
     secret: "your_secret_key", // Replace with your secret key
     resave: false, // Don't resave session if it hasn't been modified
