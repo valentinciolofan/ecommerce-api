@@ -26,13 +26,18 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
-
+const pgPool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // Necessary for hosted environments like Heroku
+  },
+});
 // Configure session management using ConnectPgSimple
 const PgSession = pgSession(session); 
 app.use(
   session({
     store: new PgSession({
-      pool: knex,                // Your Knex connection pool
+      pool: pgPool,                // Your Knex connection pool
       tableName: 'session'        // Table name for storing sessions
     }),
     secret: "your_secret_key", // Replace with your secret key
