@@ -18,11 +18,12 @@ export const handleLogin = async (req, res, knex, bcrypt) => {
                         req.session.userId = response[0].id;
                         req.session.userEmail = response[0].email;
                         console.log("req login:", req.session);
+                        console.log("req login:", req.sessionID);
                         if (remember !== undefined) {
                             req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
                         }
                         // Respond with success message and redirect info
-                        return res.status(200).json({ message: 'Logged in!', redirect: '/shop' });
+                        return res.status(200).json({ message: 'Logged in!' });
                     } else {
                         // Invalid password
                         return res.status(401).json({ message: 'Invalid credentials' });
