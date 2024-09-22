@@ -32,8 +32,8 @@ app.use(cors({
   origin: `http://localhost:4321`,
   credentials: true, 
   // optionSuccessStatus: 200,
-  // Headers: true,
-  // exposedHeaders: 'Set-Cookie',
+  Headers: true,
+  exposedHeaders: 'Set-Cookie',
   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Access-Control-Allow-Origin',
@@ -68,9 +68,9 @@ app.use(
     saveUninitialized: false, // Only save sessions that are initialized
     cookie: {
       maxAge: 3600000, // 1 hour session expiration
-      secure: false, // Ensure cookies are only sent over HTTPS in production
+      secure: true, // Ensure cookies are only sent over HTTPS in production
       httpOnly: true, // Make cookie inaccessible to JavaScript
-      sameSite: 'lax', // Prevent CSRF by only sending cookies on same-site requests
+      sameSite: 'strict', // Prevent CSRF by only sending cookies on same-site requests
     },
   })
 );
