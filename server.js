@@ -29,7 +29,7 @@ app.use(express.json());
 
 
 app.use(cors({
-  origin: `*`,
+  origin: `https://ecommerce-ten-rose-33.vercel.app`,
   credentials: true, 
   // optionSuccessStatus: 200,
   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
