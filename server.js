@@ -71,7 +71,7 @@ app.use(
     },
   })
 );
-// app.options('*', cors()); // Preflight requests for all routes
+app.options('*', cors()); // Preflight requests for all routes
 // app.set("trust proxy", 1); // add this line to ensure proxy headers are trusted
 
 // Test route to check if the server is running
