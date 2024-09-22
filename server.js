@@ -33,12 +33,14 @@ app.use(cors({
   credentials: true, 
   preflightContinue: false,
   optionsSuccessStatus: 204,
+  exposedHeaders: ['Set-Cookie'],
   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Content-Type',
     'Authorization'
   ]
 }));
+app.options('*', cors()); // Preflight requests for all routes
 
 
 
@@ -72,8 +74,17 @@ app.use(
     },
   })
 );
-app.options('*', cors()); // Preflight requests for all routes
 app.set("trust proxy", 1); // add this line to ensure proxy headers are trusted
+// Example of redirecting HTTP to HTTPS in Express
+app.use((req, res, next) => {
+  if (req.secure) {
+    // Request is HTTPS, so pass it along
+    return next();
+  } else {
+    // Redirect HTTP to HTTPS
+    res.redirect(`https://${req.headers.host}${req.url}`);
+  }
+});
 
 // Test route to check if the server is running
 app.get('/', async (req, res) => {
