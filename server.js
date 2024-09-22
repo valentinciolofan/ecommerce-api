@@ -29,12 +29,11 @@ app.use(express.json());
 
 
 app.use(cors({
-  origin: `http://localhost:4321`,
+  origin: `*`,
   credentials: true, 
   // optionSuccessStatus: 200,
   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
-    'Access-Control-Allow-Origin',
     'Content-Type',
     'Authorization'
   ]
@@ -66,7 +65,7 @@ app.use(
     saveUninitialized: false, // Only save sessions that are initialized
     cookie: {
       maxAge: 3600000, // 1 hour session expiration
-      secure: true, // Ensure cookies are only sent over HTTPS in production
+      secure: false, // Ensure cookies are only sent over HTTPS in production
       httpOnly: true, // Make cookie inaccessible to JavaScript
       sameSite: 'none', // Prevent CSRF by only sending cookies on same-site requests
     },
