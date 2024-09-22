@@ -65,14 +65,14 @@ app.use(
     saveUninitialized: false, // Only save sessions that are initialized
     cookie: {
       maxAge: 3600000, // 1 hour session expiration
-      secure: true, // Ensure cookies are only sent over HTTPS in production
+      secure: process.env.NODE_ENV === 'production', // Ensure cookies are only sent over HTTPS in production
       httpOnly: true, // Make cookie inaccessible to JavaScript
       sameSite: 'none', // Prevent CSRF by only sending cookies on same-site requests
     },
   })
 );
 app.options('*', cors()); // Preflight requests for all routes
-// app.set("trust proxy", 1); // add this line to ensure proxy headers are trusted
+app.set("trust proxy", 1); // add this line to ensure proxy headers are trusted
 
 // Test route to check if the server is running
 app.get('/', async (req, res) => {
