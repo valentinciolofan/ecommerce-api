@@ -69,7 +69,7 @@ app.use(
     cookie: {
       maxAge: 3600000, // 1 hour session expiration
       secure: false, // Ensure cookies are only sent over HTTPS in production
-      httpOnly: true, // Make cookie inaccessible to JavaScript
+      httpOnly: false, // Make cookie inaccessible to JavaScript
       sameSite: 'none', // Prevent CSRF by only sending cookies on same-site requests
     },
   })
