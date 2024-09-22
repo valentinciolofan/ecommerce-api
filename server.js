@@ -74,6 +74,21 @@ app.use(
     },
   })
 );
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    // Skip redirection for preflight requests
+    return next();
+  }
+
+  if (req.secure) {
+    // If the request is already secure (HTTPS), proceed
+    return next();
+  } else {
+    // Otherwise, redirect from HTTP to HTTPS
+    res.redirect(`https://${req.headers.host}${req.url}`);
+  }
+});
+
 app.set("trust proxy", 1); // add this line to ensure proxy headers are trusted
 // Example of redirecting HTTP to HTTPS in Express
 app.use((req, res, next) => {
