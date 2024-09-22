@@ -29,11 +29,11 @@ app.use(express.json());
 
 
 app.use(cors({
-  origin: `https://ecommerce-ten-rose-33.vercel.app`,
+  origin: `http://localhost:4321`,
   credentials: true, 
-  optionSuccessStatus: 200,
-  Headers: true,
-  exposedHeaders: 'Set-Cookie',
+  // optionSuccessStatus: 200,
+  // Headers: true,
+  // exposedHeaders: 'Set-Cookie',
   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Access-Control-Allow-Origin',
@@ -49,6 +49,11 @@ const pgPool = new pg.Pool({
   ssl: {
     rejectUnauthorized: false, // Necessary for hosted environments like Heroku
   },
+  // host: 'localhost',     // Localhost for local development
+  // user: 'postgres',      // Your PostgreSQL user
+  // password: '2002',      // Your PostgreSQL password
+  // database: 'ecommercedb',// The database you want to connect to
+  // port: 5432 
 });
 // Configure session management using ConnectPgSimple
 const PgSession = pgSession(session); 
@@ -63,14 +68,14 @@ app.use(
     saveUninitialized: false, // Only save sessions that are initialized
     cookie: {
       maxAge: 3600000, // 1 hour session expiration
-      secure: process.env.NODE_ENV === 'production', // Ensure cookies are only sent over HTTPS in production
+      secure: false, // Ensure cookies are only sent over HTTPS in production
       httpOnly: true, // Make cookie inaccessible to JavaScript
-      sameSite: 'none', // Prevent CSRF by only sending cookies on same-site requests
+      sameSite: 'lax', // Prevent CSRF by only sending cookies on same-site requests
     },
   })
 );
 app.options('*', cors()); // Preflight requests for all routes
-app.set("trust proxy", 1); // add this line to ensure proxy headers are trusted
+// app.set("trust proxy", 1); // add this line to ensure proxy headers are trusted
 
 // Test route to check if the server is running
 app.get('/', async (req, res) => {
@@ -80,7 +85,18 @@ app.get('/', async (req, res) => {
     res.send(orders);
   }
 });
+app.post('/cookietest', (req, res) => {
+  res.cookie('sessionId', 'someSessionIdValue', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none',
+    maxAge: 3600000,
+});
 
+res.send(req.session.cookie);
+
+
+})
 // Define routes for your API (other routes remain unchanged)
 app.post('/contact', (req, res) => handleContact(req, res));
 app.post('/login', (req, res) => handleLogin(req, res, knex, bcrypt));
