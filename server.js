@@ -20,12 +20,30 @@ import { handleUpdateProfile } from './controllers/updateProfile.js';
 const app = express();
 app.use(express.json());
 
+// app.use(cors({
+//   origin: 'https://ecommerce-ten-rose-33.vercel.app', // allow any domains for testing
+//   credentials: true, // Allow credentials (like cookies)
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
+//   allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+// }));
+
+
 app.use(cors({
-  origin: 'https://ecommerce-ten-rose-33.vercel.app', // allow any domains for testing
-  credentials: true, // Allow credentials (like cookies)
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+  origin: `https://ecommerce-ten-rose-33.vercel.app`,
+  credentials: true, 
+  optionSuccessStatus: 200,
+  Headers: true,
+  exposedHeaders: 'Set-Cookie',
+  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Access-Control-Allow-Origin',
+    'Content-Type',
+    'Authorization'
+  ]
 }));
+
+
+
 const pgPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
