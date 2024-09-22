@@ -32,8 +32,6 @@ app.use(cors({
   origin: `http://localhost:4321`,
   credentials: true, 
   // optionSuccessStatus: 200,
-  Headers: true,
-  exposedHeaders: 'Set-Cookie',
   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Access-Control-Allow-Origin',
@@ -68,13 +66,13 @@ app.use(
     saveUninitialized: false, // Only save sessions that are initialized
     cookie: {
       maxAge: 3600000, // 1 hour session expiration
-      secure: false, // Ensure cookies are only sent over HTTPS in production
-      httpOnly: false, // Make cookie inaccessible to JavaScript
+      secure: true, // Ensure cookies are only sent over HTTPS in production
+      httpOnly: true, // Make cookie inaccessible to JavaScript
       sameSite: 'none', // Prevent CSRF by only sending cookies on same-site requests
     },
   })
 );
-app.options('*', cors()); // Preflight requests for all routes
+// app.options('*', cors()); // Preflight requests for all routes
 // app.set("trust proxy", 1); // add this line to ensure proxy headers are trusted
 
 // Test route to check if the server is running
