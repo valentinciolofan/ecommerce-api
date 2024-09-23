@@ -21,8 +21,8 @@ export const handleCreateCheckoutSession = async (req, res) => {
             payment_method_types: ['card'],
             line_items: products,
             mode: 'payment',
-            success_url: `http://localhost:4321/checkout/shipping/?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `http://localhost:4321/cart`
+            success_url: `https://ecommerce-ten-rose-33.vercel.app/checkout/shipping/?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `https://www.valentinciolofan.com/cart`
         });
 
         res.json({ id: session.id });
